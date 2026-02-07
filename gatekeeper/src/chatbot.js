@@ -43,7 +43,7 @@ class Chatbot {
         // doesn't have a getGenerativeModel() method; generation happens directly on client.models
     }
 
-    async generateResponse(userMessage, appName, policyVerdict) {
+    async generateResponse(userMessage, appName, policyVerdict, requestedMinutes) {
         try {
             // ensure we have a working model name set
             await this.ensureModel();
@@ -121,7 +121,8 @@ TONE:
 INPUTS:
 - App name: ${appName}
 - Policy verdict: ${policyVerdict.type}${policyVerdict.reason ? ` (${policyVerdict.reason})` : ""}
-- Allowed minutes if approved: ${policyVerdict.allowedMinutes || "N/A"}
+- Allowed minutes if approved (policy max): ${policyVerdict.allowedMinutes || "N/A"}
+- User requested minutes: ${typeof requestedMinutes === 'number' ? String(requestedMinutes) : 'N/A'}
 - User message: "${userMessage}"`;
 
             // GoogleGenAI shape: client.models.generateContent({ model, contents })
@@ -138,12 +139,33 @@ INPUTS:
                         const msg = String(obj.message || '').trim();
                         const follow = obj.followUpQuestion ? String(obj.followUpQuestion).trim() : '';
                         const combined = follow ? `${msg}\n\n${follow}` : msg;
+                        // Determine allowMinutes, honoring policy caps and the user's request.
+                        let allowMinutes = null;
+                        if (obj.decision === 'ALLOW') {
+                            // Model may propose an allowMinutes. Prefer that when reasonable.
+                            if (typeof obj.allowMinutes === 'number' && !Number.isNaN(obj.allowMinutes)) {
+                                allowMinutes = Math.max(1, Math.floor(obj.allowMinutes));
+                            }
+                            // If model didn't provide allowMinutes, and a requestedMinutes was provided,
+                            // prefer the user's requestedMinutes.
+                            if ((allowMinutes === null || allowMinutes === 0) && typeof requestedMinutes === 'number') {
+                                allowMinutes = Math.max(1, Math.floor(requestedMinutes));
+                            }
+                            // Finally, if still null, fall back to policy allowedMinutes or 1
+                            if ((allowMinutes === null || allowMinutes === 0) && policyVerdict && typeof policyVerdict.allowedMinutes === 'number') {
+                                allowMinutes = Math.max(1, Math.floor(policyVerdict.allowedMinutes));
+                            }
+                            // Enforce policy cap if present
+                            if (policyVerdict && typeof policyVerdict.allowedMinutes === 'number') {
+                                allowMinutes = Math.min(allowMinutes, Math.max(1, Math.floor(policyVerdict.allowedMinutes)));
+                            }
+                        }
                         return {
                             text: combined || msg || 'OK',
                             decision: {
                                 allow: obj.decision === 'ALLOW',
                                 reason: msg || '',
-                                allowMinutes: typeof obj.allowMinutes === 'number' ? obj.allowMinutes : null
+                                allowMinutes: allowMinutes
                             }
                         };
                     };

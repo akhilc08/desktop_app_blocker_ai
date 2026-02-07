@@ -333,13 +333,19 @@ function updateSliderForSelected() {
     const policy = currentCfg.policies[appId];
     if (policy) {
       const maxReq = Number(policy.maxUnlockMinutesPerRequest || 15);
-      maxVal = Math.max(1, maxReq);
       const usageLog = currentCfg.usageToday || {};
       const todayKey = getLocalDayKey(new Date());
       const used = (usageLog[todayKey] && usageLog[todayKey][appId]) ? usageLog[todayKey][appId] : 0;
       const dailyMax = Number(policy.dailyMaxMinutes || 0);
       const remaining = (dailyMax > 0) ? Math.max(0, dailyMax - used) : Infinity;
-      allowed = (remaining > 0 || dailyMax === 0);
+      // If there is a daily cap, cap the per-request max at the remaining minutes
+      if (dailyMax > 0) {
+        maxVal = Math.max(1, Math.min(maxReq, remaining));
+        allowed = remaining > 0;
+      } else {
+        maxVal = Math.max(1, maxReq);
+        allowed = true;
+      }
     }
   }
   timeSlider.max = String(maxVal);

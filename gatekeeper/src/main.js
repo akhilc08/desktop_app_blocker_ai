@@ -9,8 +9,8 @@ const fs = require("fs");
 const { execSync } = require("child_process");
 
 if (process.platform === "win32") {
-  // Ensure the taskbar icon uses the app's window icon.
-  app.setAppUserModelId("com.gatekeeper.app");
+  // Ensure the taskbar icon uses the app's window icon and notifications show a friendly name.
+  app.setAppUserModelId("Gatekeeper");
 }
 
 const store = new Store({
@@ -472,7 +472,7 @@ ipcMain.handle("unlock:request", async (_event, { appId, appName, message, reque
   const cap = Math.min(verdict.allowedMinutes, policy?.maxUnlockMinutesPerRequest ?? verdict.allowedMinutes);
   // Ask the chatbot to evaluate the reason strictly; it may return a decision object
   try {
-    const cbResp = await chatbot.generateResponse(message, displayName, verdict);
+    const cbResp = await chatbot.generateResponse(message, displayName, verdict, requestedMinutes);
     let cbText = '';
     let cbDecision = null;
     if (cbResp && typeof cbResp === 'object') {
@@ -520,8 +520,8 @@ ipcMain.handle("unlock:request", async (_event, { appId, appName, message, reque
       await launchAppNow(appItem);
     }
 
-    // Use the chatbot's decision message for confirmation
-    const replyText = cbText || `Approved for ${unlockMinutes} minutes.`;
+    // Use a deterministic confirmation message using the actual granted minutes
+    const replyText = `Access granted for ${unlockMinutes} minute${unlockMinutes === 1 ? '' : 's'}.`;
     return { ok: true, reply: replyText, unlockMinutes };
   } catch (e) {
     return { ok: false, reply: String(e) };

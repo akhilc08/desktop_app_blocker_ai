@@ -55,11 +55,23 @@ function evaluatePolicy({ appId, policy, usageLog, now }) {
 
   // If no daily max set, allow 15 minutes default
   const defaultAllow = 15;
-  const allowedMinutes = (policy.dailyMaxMinutes ?? 0) > 0
-    ? Math.min(remaining, policy.maxUnlockMinutesPerRequest ?? remaining)
-    : (policy.maxUnlockMinutesPerRequest ?? defaultAllow);
+  // Compute effective max-per-request capped by remaining minutes (if a daily cap exists)
+  const configuredMaxPerRequest = (typeof policy.maxUnlockMinutesPerRequest === 'number') ? policy.maxUnlockMinutesPerRequest : null;
+  let effectiveMaxPerRequest = null;
 
-  return { type: "LIMIT", allowedMinutes: Math.max(1, allowedMinutes) };
+  if ((policy.dailyMaxMinutes ?? 0) > 0) {
+    // If there's a daily cap, cap per-request at the remaining minutes
+    effectiveMaxPerRequest = configuredMaxPerRequest !== null
+      ? Math.min(configuredMaxPerRequest, remaining)
+      : remaining;
+  } else {
+    // No daily cap configured — fall back to configured per-request or default
+    effectiveMaxPerRequest = configuredMaxPerRequest !== null ? configuredMaxPerRequest : defaultAllow;
+  }
+
+  const allowedMinutes = Math.max(1, Math.floor(effectiveMaxPerRequest || 0));
+
+  return { type: "LIMIT", allowedMinutes: allowedMinutes, remainingMinutes: remaining, maxPerRequestEffective: allowedMinutes };
 }
 
 function recordUsageTick({ usageLog, appId, minutes = 1, now = new Date() }) {
