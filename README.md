@@ -13,10 +13,24 @@ Gatekeeper is an app that helps enforce time-based restrictions on desktop appli
 
 ## Quick Start
 
+**Option 1:** Install on Windows
+
+Download the Gatekeeper Setup Installer from the latest release.
+
+Run the installer and follow the prompts.
+
+Launch Gatekeeper from the Start Menu.
+
+Set the Google Gemini API key in the app settings (top right corner).
+
+**Option 2:** Run from Source
+
 Prereqs:
 - Node.js 18+
 - npm
 - Google Gemini API key
+
+Download source code as a zip file from release.
 
 Install dependencies and run:
 
