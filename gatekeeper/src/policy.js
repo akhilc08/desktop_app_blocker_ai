@@ -25,14 +25,14 @@ function minutesUsedToday(usageLog, appId, now = new Date()) {
 function evaluatePolicy({ appId, policy, usageLog, now }) {
   // If no policy, default deny (safer)
   if (!policy) {
-    return { type: "DENY", reason: "No policy configured for this app." };
+    return { type: "HARD_DENY", reason: "No policy configured for this app." };
   }
 
   const used = minutesUsedToday(usageLog, appId, now);
   const remaining = Math.max(0, (policy.dailyMaxMinutes ?? 0) - used);
 
   if ((policy.dailyMaxMinutes ?? 0) > 0 && remaining <= 0) {
-    return { type: "DENY", reason: `Daily limit hit (${policy.dailyMaxMinutes} min).` };
+    return { type: "HARD_DENY", reason: `Daily limit hit (${policy.dailyMaxMinutes} min).` };
   }
 
   // Allowed time windows
@@ -49,7 +49,7 @@ function evaluatePolicy({ appId, policy, usageLog, now }) {
     });
 
     if (!inAny) {
-      return { type: "DENY", reason: "Outside your allowed time window." };
+      return { type: "HARD_DENY", reason: "Outside your allowed time window." };
     }
   }
 
@@ -59,7 +59,7 @@ function evaluatePolicy({ appId, policy, usageLog, now }) {
     ? Math.min(remaining, policy.maxUnlockMinutesPerRequest ?? remaining)
     : (policy.maxUnlockMinutesPerRequest ?? defaultAllow);
 
-  return { type: "ALLOW", allowedMinutes: Math.max(1, allowedMinutes) };
+  return { type: "LIMIT", allowedMinutes: Math.max(1, allowedMinutes) };
 }
 
 function recordUsageTick({ usageLog, appId, minutes = 1, now = new Date() }) {

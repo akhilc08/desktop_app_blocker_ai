@@ -1,28 +1,66 @@
 <!doctype html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <title>Gatekeeper</title>
-    <style>
-      body { font-family: system-ui; padding: 14px; }
-      select, textarea, button { width: 100%; margin-top: 10px; }
-      textarea { height: 90px; }
-      #log { white-space: pre-wrap; margin-top: 12px; padding: 10px; border: 1px solid #ddd; height: 220px; overflow: auto; }
-    </style>
-  </head>
-  <body>
-    <h2>Request Unlock</h2>
-    <div>
-      <label>App</label>
-      <select id="appSelect"></select>
 
-      <label>Ask</label>
-      <textarea id="msg" placeholder="Tell me why you need it."></textarea>
-      <button id="send">Send</button>
+<head>
+  <meta charset="utf-8" />
+  <title>Gatekeeper</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
 
-      <div id="log"></div>
+<body>
+  <div class="window-wrap">
+    <div class="card">
+      <button id="openSettings" class="settings-btn" title="Settings">⚙️</button>
+
+      <div class="header">
+        <div class="logo"><img src="../assets/icon.svg" alt="Gatekeeper logo" /></div>
+        <div>
+          <h2>Gatekeeper</h2>
+          <div class="sub">Request temporary unlock for apps</div>
+        </div>
+      </div>
+
+      <div class="section" id="appStatusSection">
+        <div class="app-status-header">
+          <h3>App Status</h3>
+        </div>
+        <div id="appStatusList" class="app-status-list"></div>
+      </div>
+
+
+
+      <div class="form-row" style="display:flex;gap:16px;align-items:flex-start;">
+        <div style="width:260px;display:flex;flex-direction:column;gap:12px;">
+          <div class="field-wrap">
+            <label>App</label>
+            <select id="appSelect" disabled></select>
+          </div>
+          <div class="field-wrap">
+            <label>Request time (minutes)</label>
+            <div style="display:flex;gap:8px;align-items:center;">
+              <input type="range" id="timeSlider" min="1" max="15" value="10" style="flex:1;" />
+              <div id="timeLabel" style="width:54px;text-align:right;font-weight:600;">10</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex-1 field-wrap">
+          <label>Reason</label>
+          <textarea id="msg" placeholder="Tell me why you need it."></textarea>
+        </div>
+
+        <div style="width:120px;display:flex;flex-direction:column;gap:8px;align-items:stretch;">
+          <label style="visibility:hidden">send</label>
+          <button id="send" class="btn">Send</button>
+          <button id="quick" class="btn secondary">Quick</button>
+        </div>
+      </div>
+
+      <div class="messages" id="log" aria-live="polite"></div>
     </div>
+  </div>
 
-    <script src="chat.js"></script>
-  </body>
+  <script src="chat.js"></script>
+</body>
+
 </html>

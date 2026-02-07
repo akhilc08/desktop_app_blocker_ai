@@ -1,0 +1,9 @@
+{
+    "chat.tools.terminal.autoApprove": {
+        "npm start": true,
+        "/^node --check gatekeeper/src/windows/settings\\.js$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}
