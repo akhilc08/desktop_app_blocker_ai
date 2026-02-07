@@ -3,7 +3,14 @@
   "version": "0.1.0",
   "description": "Time limit management app with AI-based access control",
   "main": "src/main.js",
-  "author": "cx18121",
+  "authors": [
+    {
+      "name": "Charlie Xue"
+    },
+    {
+      "name": "Akhil Chilaka"
+    }
+  ],
   "scripts": {
     "start": "electron-forge start",
     "dev": "electronmon .",
@@ -30,5 +37,13 @@
     "electronmon": "^2.0.3",
     "png-to-ico": "^2.1.0",
     "sharp": "^0.33.5"
-  }
+  },
+  "makers": [
+    {
+      "name": "@electron-forge/maker-squirrel",
+      "config": {
+        "name": "gatekeeper"
+      }
+    }
+  ]
 }
