@@ -28,7 +28,6 @@ Set the Google Gemini API key in the app settings (top right corner).
 Prereqs:
 - Node.js 18+
 - npm
-- Google Gemini API key
 
 Download source code as a zip file from release.
 
@@ -38,6 +37,7 @@ Install dependencies and run:
 npm install
 npm start
 ```
+Set the Google Gemini API key in the app settings (top right corner).
 
 ## UI Overview
 
